@@ -25,7 +25,7 @@ const redis = new Redis({
 //connection to your redis oss database----------------------
 
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/web/index.html')
+  res.sendFile(__dirname + '/views/index.html')
 })
 
 app.post('/getOrderDetails', (req, res) => {
@@ -40,12 +40,12 @@ app.post('/getOrderDetails', (req, res) => {
                   if (error) throw error;
                   updateOrderCache(orderId, results);
                   var ResMilliseconds = (new Date).getTime();
-                  console.log("[Order:"+orderId+"]Query Response Time from mySQL (ms):"+(ResMilliseconds-ReqMilliseconds));
+                  console.log("[Order:"+orderId+"] Query Response Time from mySQL (ms):"+(ResMilliseconds-ReqMilliseconds));
                   res.render('index.ejs', {order: results});
               });
             }else{
               var ResMilliseconds = (new Date).getTime();
-              console.log("[Order:"+orderId+"]Query Response Time from cache (ms):"+(ResMilliseconds-ReqMilliseconds));
+              console.log("[Order:"+orderId+"] Query Response Time from redis (ms):"+(ResMilliseconds-ReqMilliseconds));
               res.render('index.ejs', {order: JSON.parse(result)});
             }
           });
