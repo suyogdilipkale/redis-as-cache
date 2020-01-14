@@ -41,3 +41,20 @@ CREATE TABLE order_detail
   FOREIGN KEY (orderid) REFERENCES order_master(id),
   FOREIGN KEY (productid) REFERENCES product(id)
 );
+
+USE `e_shopping`;
+DROP procedure IF EXISTS `getLatestorderByUser`;
+
+DELIMITER $$
+USE `e_shopping`$$
+CREATE PROCEDURE getLatestorderByUser
+(
+IN username varchar(100)
+)
+BEGIN
+select om.id, om.customerid, c.customername, od.productid, p.product, od.value from order_master om
+join order_detail od on om.id = od.orderid
+join product p on p.id = od.productid
+join customer c on c.id = om.customerid
+where om.customerid IN (select max(id) from customer where customername like CONCAT('%', username,'%'));
+END$$

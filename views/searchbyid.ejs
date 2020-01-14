@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><style>
+  table {
+  border-collapse: collapse;
+  width: 100%;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px;
+  }
+  th{
+    background-color: lightblue;
+  }
+  tr:nth-child(even) {background-color: #f2f2f2;}
+</style>
+  <title>My e Shopping</title>
+</head>
+<body>
+    <table>
+      <% if(order.length>0) { %>
+      <tr><td>Order Id:</td><td><%= order[0].id %></td></tr>
+      <tr><td>Customer Name:</td><td><%= order[0].customername %></td></tr>
+      <br/>
+      <tr><th>ProductId</th><th>Product</th><th>Price</th></tr>
+    <% for(var i=0; i<order.length; i++) {%>
+    <tr><td><%= order[i].productid %></td><td><%= order[i].product %></td><td><%= order[i].value %></td></tr>
+    <% } }%>
+    <tr></tr>
+  </table>
+  <br/>
+  Enter Order Id to get details:
+  <form action="/getOrderDetailsById" method="POST">
+    <input type="text" placeholder="orderid" name="orderid">
+    <button type="submit">Submit</button>
+  </form>
+</body>
+</html>

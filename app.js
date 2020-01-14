@@ -28,7 +28,44 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html')
 })
 
-app.post('/getOrderDetails', (req, res) => {
+app.get('/getLatestOrderDetailsByUser', (req, res) => {
+  res.render('searchbyuser.ejs', {order: {}});
+})
+
+app.get('/getOrderDetailsById', (req, res) => {
+  res.render('searchbyid.ejs', {order: {}});
+})
+
+app.post('/getLatestOrderDetailsByUser', (req, res) => {
+    try{
+      var username =req.body.username;
+      if(username!=null || username!=undefined){
+          var ReqMilliseconds = (new Date).getTime();
+          redis.get("User:"+username.replace(/ /g,''),function(error,result){
+            if(result===null){
+              //fetch order details
+              mySQLConnection.query("CALL getLatestorderByUser(?)",username, function (error, results, fields) {
+                  if (error) throw error;
+                  updateOrderCache("User:"+username.replace(/ /g,''), results[0]);
+                  res.render('searchbyuser.ejs', {order: results[0]});
+                  var ResMilliseconds = (new Date).getTime();
+                  console.log("[User:"+username+"] Query Response Time from mySQL (ms):"+(ResMilliseconds-ReqMilliseconds));
+              });
+            }else{
+              var ResMilliseconds = (new Date).getTime();
+              console.log("[User:"+username+"] Query Response Time from redis (ms):"+(ResMilliseconds-ReqMilliseconds));
+              res.render('searchbyuser.ejs', {order: JSON.parse(result)});
+            }
+          });
+
+      }
+    }
+    catch(e){
+      console.log("Exception in getLatestOrderDetailsByUser:"+e);
+    }
+})
+
+app.post('/getOrderDetailsById', (req, res) => {
     try{
       var orderId =req.body.orderid;
       if(orderId!=null || orderId!=undefined){
@@ -38,15 +75,15 @@ app.post('/getOrderDetails', (req, res) => {
               //fetch order details
               mySQLConnection.query("select om.id, om.customerid, c.customername, od.productid, p.product, od.value from order_master om join order_detail od on om.id = od.orderid join product p on p.id = od.productid join customer c on c.id = om.customerid where om.id = ?",orderId, function (error, results, fields) {
                   if (error) throw error;
-                  updateOrderCache(orderId, results);
+                  updateOrderCache("Order:"+orderId, results);
+                  res.render('searchbyid.ejs', {order: results});
                   var ResMilliseconds = (new Date).getTime();
                   console.log("[Order:"+orderId+"] Query Response Time from mySQL (ms):"+(ResMilliseconds-ReqMilliseconds));
-                  res.render('index.ejs', {order: results});
               });
             }else{
               var ResMilliseconds = (new Date).getTime();
               console.log("[Order:"+orderId+"] Query Response Time from redis (ms):"+(ResMilliseconds-ReqMilliseconds));
-              res.render('index.ejs', {order: JSON.parse(result)});
+              res.render('searchbyid.ejs', {order: JSON.parse(result)});
             }
           });
 
@@ -63,7 +100,7 @@ app.listen(port, () => console.log(`Example app listening on port ${port}!`))
 //update the order details in cache
 function updateOrderCache(orderId, payload){
   try{
-    redis.set("Order:"+orderId,JSON.stringify(payload),function(error,result){
+    redis.set(orderId,JSON.stringify(payload),"EX",10,function(error,result){
       if (error) throw error;
     });
   }

@@ -25,7 +25,7 @@ function insertOrder(){
         //now insert some orders for this customer
         //step 2: first get some random productIds from database for this order
         var productIds = [];
-        while(productIds.length < 8){
+        while(productIds.length < 12){
           var r = Math.floor(Math.random()*1000) + 1;
           if(productIds.indexOf(r) === -1) productIds.push(r);
         }
