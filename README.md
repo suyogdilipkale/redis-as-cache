@@ -30,6 +30,12 @@ Step 3: Run app.js (express npm) to demostrate fetch order details with/without 
 8. you can repeat the steps to load for different order ids and compare the results served from mysql and redis database
 9. this way you will learn how redis easily solve your performance issue by just adding it as caching layer.
 
+Step 4: Load testing with RedisTimeSeries analytics
+1. configure your Redis, RedisTimeSeries and mySQL database connection details (host, ports etc)
+2. run the node loadtesting.js
+3. once load testing is progress/done you can visualise analytics on RedisInsight below is test query
+TS.MRANGE 0 + FILTER server=local
+
 
 
 
