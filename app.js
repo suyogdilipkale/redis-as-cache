@@ -27,6 +27,15 @@ const redis = new Redis({
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html')
 })
+//set analytics flag if you want to capture------------------
+const captureAnalytics = true;
+const redisAnalytics = new Redis({
+  port:14390,
+  host:"34.93.157.182"
+});
+//TS.MRANGE 0 1596437285319 AGGREGATION min 1000 FILTER server=local WITHLABELS
+//TS.MRANGE 0 + AGGREGATION FILTER server=local WITHLABELS
+//set analytics flag if you want to capture------------------
 
 app.get('/getLatestOrderDetailsByUser', (req, res) => {
   res.render('searchbyuser.ejs', {order: {}});
@@ -50,11 +59,29 @@ app.post('/getLatestOrderDetailsByUser', (req, res) => {
                   res.render('searchbyuser.ejs', {order: results[0]});
                   var ResMilliseconds = (new Date).getTime();
                   console.log("[User:"+username+"] Query Response Time from mySQL (ms):"+(ResMilliseconds-ReqMilliseconds));
+                  if(captureAnalytics){
+                      redisAnalytics.sendCommand(
+                      new Redis.Command('TS.CREATE', ["QueryTime:MySQL", "LABELS", "server", "local",, "db", "mysql"], 'utf-8', function(err,value) {} )
+                      );
+                      redisAnalytics.sendCommand(
+                      new Redis.Command(
+                      'TS.ADD', ["QueryTime:MySQL",Math.floor(Date.now()),(ResMilliseconds-ReqMilliseconds), "LABELS", "server", "local",, "db", "mysql"
+                      ], 'utf-8', function(err,value) {} ));
+                  }
               });
             }else{
               var ResMilliseconds = (new Date).getTime();
               console.log("[User:"+username+"] Query Response Time from redis (ms):"+(ResMilliseconds-ReqMilliseconds));
               res.render('searchbyuser.ejs', {order: JSON.parse(result)});
+              if(captureAnalytics){
+                  redisAnalytics.sendCommand(
+                  new Redis.Command('TS.CREATE', ["QueryTime:Redis", "LABELS", "server", "local", "db", "redis"], 'utf-8', function(err,value) {} )
+                  );
+                  redisAnalytics.sendCommand(
+                  new Redis.Command(
+                  'TS.ADD', ["QueryTime:Redis",Math.floor(Date.now()),(ResMilliseconds-ReqMilliseconds), "LABELS", "server", "local", "db", "redis"
+                  ], 'utf-8', function(err,value) {} ));
+              }
             }
           });
 
@@ -100,7 +127,7 @@ app.listen(port, () => console.log(`Example app listening on port ${port}!`))
 //update the order details in cache
 function updateOrderCache(orderId, payload){
   try{
-    redis.set(orderId,JSON.stringify(payload),"EX",10,function(error,result){
+    redis.set(orderId,JSON.stringify(payload),"EX",1o,function(error,result){
       if (error) throw error;
     });
   }
