@@ -10,7 +10,7 @@ const mysql = require('mysql');
 const mySQLConnection = mysql.createConnection({
   host     : 'localhost',
   user     : 'root',
-  password : 'suyog@123',
+  password : 'suyog',
   database : 'e_shopping'
 });
 mySQLConnection.connect();
@@ -61,11 +61,11 @@ app.post('/getLatestOrderDetailsByUser', (req, res) => {
                   console.log("[User:"+username+"] Query Response Time from mySQL (ms):"+(ResMilliseconds-ReqMilliseconds));
                   if(captureAnalytics){
                       redisAnalytics.sendCommand(
-                      new Redis.Command('TS.CREATE', ["QueryTime:MySQL", "LABELS", "server", "local",, "db", "mysql"], 'utf-8', function(err,value) {} )
+                      new Redis.Command('TS.CREATE', ["QueryTime:MySQL", "LABELS", "server", "local", "db", "mysql"], 'utf-8', function(err,value) {} )
                       );
                       redisAnalytics.sendCommand(
                       new Redis.Command(
-                      'TS.ADD', ["QueryTime:MySQL",Math.floor(Date.now()),(ResMilliseconds-ReqMilliseconds), "LABELS", "server", "local",, "db", "mysql"
+                      'TS.ADD', ["QueryTime:MySQL",Math.floor(Date.now()),(ResMilliseconds-ReqMilliseconds), "LABELS", "server", "local", "db", "mysql"
                       ], 'utf-8', function(err,value) {} ));
                   }
               });

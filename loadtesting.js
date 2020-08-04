@@ -28,6 +28,7 @@ setTimeout(function(){
 },2000);
 //TS.MRANGE 0 1596437285319 AGGREGATION min 1000 FILTER server=local WITHLABELS
 //TS.MRANGE 0 + AGGREGATION FILTER server=local WITHLABELS
+//TS.MRANGE 0 + FILTER server=local
 //set analytics flag if you want to capture------------------
 
 function loadTesting(){
